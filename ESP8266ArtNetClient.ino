@@ -2,6 +2,8 @@
 #include <WiFiUDP.h>
 #include <Adafruit_NeoPixel.h>
 
+#define DEBUG
+
 #define PIN 2
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
@@ -37,6 +39,33 @@ void setup() {
   }
 }
 
+void decodePackage(int packetSize) {
+  if (packetSize >= 7) {
+    if (strncmp(packetBuffer, "Art-Net", 7) == 0) {
+      Serial.println("Artnet packet received");
+      uint16_t numChannels = 0;
+      numChannels |= packetBuffer[16];
+      numChannels <<= 8;
+      numChannels |= packetBuffer[17];
+      Serial.print("Number of channels:");
+      Serial.println(numChannels);
+      uint8_t led = 0;
+      if (numChannels >= 3) {
+        for (int i = 0; i < numChannels; i += 3) {
+          uint32_t color = 0;
+          color |= packetBuffer[18 + i];
+          color <<= 8;
+          color |= packetBuffer[18 + i + 1];
+          color <<= 8;
+          color |= packetBuffer[18 + i + 2];
+          strip.setPixelColor(led++, color);
+        }
+        strip.show();
+      }
+    }
+  }
+}
+
 void loop() {
   // check if the WiFi and UDP connections were successful
   if (wifiConnected) {
@@ -46,39 +75,22 @@ void loop() {
       int packetSize = UDP.parsePacket();
       if (packetSize)
       {
+
+#ifdef DEBUG
         Serial.println("");
         Serial.print("Received packet of size ");
         Serial.println(packetSize);
-
+#endif
         // read the packet into packetBufffer
         UDP.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE);
-        for(int i = 0; i < UDP_TX_PACKET_MAX_SIZE; i++) {
+#ifdef DEBUG
+        for (int i = 0; i < UDP_TX_PACKET_MAX_SIZE; i++) {
           Serial.write(packetBuffer[i]);
         }
-        if (packetSize >= 7) {
-          if (strncmp(packetBuffer, "Art-Net", 7) == 0) {
-            Serial.println("Artnet packet received");
-            uint16_t numChannels = 0;
-            numChannels |= packetBuffer[16];
-            numChannels <<= 8;
-            numChannels |= packetBuffer[17];
-            Serial.print("Number of channels:");
-            Serial.println(numChannels);
-            uint8_t led = 0;
-            if (numChannels >= 3) {
-              for (int i = 0; i < numChannels; i += 3) {
-                uint32_t color = 0;
-                color |= packetBuffer[18 + i];
-                color <<= 8;
-                color |= packetBuffer[18 + i + 1];
-                color <<= 8;
-                color |= packetBuffer[18 + i + 2];
-                strip.setPixelColor(led++, color);
-              }
-              strip.show();
-            }
-          }
-        }
+#endif
+
+        decodePackage(packetSize);
+
 
         // send a reply, to the IP address and port that sent us the packet we received
         /*UDP.beginPacket(UDP.remoteIP(), UDP.remotePort());

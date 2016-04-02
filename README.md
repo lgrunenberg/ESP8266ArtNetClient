@@ -7,7 +7,6 @@ This aims to be a fully integrated wireless Art-Net compatible node that can con
 ## TODO
 
 * general code cleanup
-  + offload Art-Net package decoding to dedicated function
 * add cyclic reconnection attempts
 * add power saving modes
 

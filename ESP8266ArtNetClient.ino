@@ -48,7 +48,7 @@ void setup() {
   if (wifiConnected) {
     udpConnected = connectUDP();
     if (udpConnected) {
-      // initialise pins
+      // TODO initialise pins
 
     }
   }
@@ -110,12 +110,13 @@ void loop() {
       delay(10);
 
     }
-
   }
-
 }
 
-// connect to UDP – returns true if successful or false if not
+/**
+ *  @brief: connect to UDP
+ *  @return: true if successful or false if not
+ */
 boolean connectUDP() {
   boolean state = false;
 
@@ -132,7 +133,11 @@ boolean connectUDP() {
 
   return state;
 }
-// connect to wifi – returns true if successful or false if not
+
+/**
+ * @brief: connect to wifi
+ * @return: true if successful or false if not
+ */
 boolean connectWifi() {
   boolean state = true;
   int i = 0;

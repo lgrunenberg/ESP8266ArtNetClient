@@ -10,12 +10,12 @@
 
 
 // wifi connection variables
-const char* ssid = "MYSSID";
-const char* password = "MYPASSWORD";
+const char* SSID = "MYSSID";
+const char* PASSWORD = "MYPASSWORD";
 boolean wifiConnected = false;
 
 // UDP variables
-unsigned int localPort = 6454;
+const unsigned int LOCAL_PORT = 6454;
 WiFiUDP UDP;
 boolean udpConnected = false;
 char packetBuffer[UDP_TX_PACKET_MAX_SIZE]; //buffer to hold incoming packet,
@@ -122,7 +122,7 @@ boolean connectUDP() {
   Serial.println("");
   Serial.println("Connecting to UDP");
 
-  if (UDP.begin(localPort) == 1) {
+  if (UDP.begin(LOCAL_PORT) == 1) {
     Serial.println("Connection successful");
     state = true;
   }
@@ -136,7 +136,7 @@ boolean connectUDP() {
 boolean connectWifi() {
   boolean state = true;
   int i = 0;
-  WiFi.begin(ssid, password);
+  WiFi.begin(SSID, PASSWORD);
   Serial.println("");
   Serial.println("Connecting to WiFi");
 
@@ -154,7 +154,7 @@ boolean connectWifi() {
   if (state) {
     Serial.println("");
     Serial.print("Connected to ");
-    Serial.println(ssid);
+    Serial.println(SSID);
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
   }

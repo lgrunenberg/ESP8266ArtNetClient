@@ -1,12 +1,13 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUDP.h>
-#include <Adafruit_NeoPixel.h>
+
 
 #define DEBUG
 
-#define PIN 2
+#define RED 4
+#define GREEN 5
+#define BLUE 10
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
 
 // wifi connection variables
 const char* ssid = "MYSSID";
@@ -20,11 +21,25 @@ boolean udpConnected = false;
 char packetBuffer[UDP_TX_PACKET_MAX_SIZE]; //buffer to hold incoming packet,
 char ReplyBuffer[] = "acknowledged"; // a string to send back
 
+void setColor(uint8_t red, uint8_t green, uint8_t blue) {
+  uint16_t actualRed = map(red, 0, 255, 0, 1023);
+  uint16_t actualGreen = map(green, 0, 255, 0, 1023);
+  uint16_t actualBlue = map(blue, 0, 255, 0, 1023);
+  analogWrite(RED, actualRed);
+  analogWrite(GREEN, actualGreen);
+  analogWrite(BLUE, actualBlue);
+}
+
+void initLED() {
+  pinMode(RED, OUTPUT);
+  pinMode(GREEN, OUTPUT);
+  pinMode(BLUE, OUTPUT);
+}
+
 void setup() {
   // Initialise Serial connection
   Serial.begin(115200);
-  strip.begin();
-  strip.show(); // Initialize all pixels to 'off'
+  initLED();
 
   // Initialise wifi connection
   wifiConnected = connectWifi();
@@ -51,16 +66,8 @@ void decodePackage(int packetSize) {
       Serial.println(numChannels);
       uint8_t led = 0;
       if (numChannels >= 3) {
-        for (int i = 0; i < numChannels; i += 3) {
-          uint32_t color = 0;
-          color |= packetBuffer[18 + i];
-          color <<= 8;
-          color |= packetBuffer[18 + i + 1];
-          color <<= 8;
-          color |= packetBuffer[18 + i + 2];
-          strip.setPixelColor(led++, color);
-        }
-        strip.show();
+        setColor(packetBuffer[18], packetBuffer[19], packetBuffer[20]);
+
       }
     }
   }

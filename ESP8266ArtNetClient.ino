@@ -1,17 +1,18 @@
 #include <ESP8266WiFi.h>
 #include <WiFiUDP.h>
 
+#include "wificonfig.h"
 
-#define DEBUG
+// #define DEBUG
 
 #define RED 4
 #define GREEN 5
-#define BLUE 10
+#define BLUE 2
 
 
 // wifi connection variables
-const char* ssid = "MYSSID";
-const char* password = "MYPASSWORD";
+const char* ssid = MYSSID;
+const char* password = MYPASSWORD;
 boolean wifiConnected = false;
 
 // UDP variables
@@ -24,7 +25,7 @@ char ReplyBuffer[] = "acknowledged"; // a string to send back
 void setColor(uint8_t red, uint8_t green, uint8_t blue) {
   uint16_t actualRed = map(red, 0, 255, 0, 1023);
   uint16_t actualGreen = map(green, 0, 255, 0, 1023);
-  uint16_t actualBlue = map(blue, 0, 255, 0, 1023);
+  uint16_t actualBlue = map(blue, 0, 255, 0, 512);
   analogWrite(RED, actualRed);
   analogWrite(GREEN, actualGreen);
   analogWrite(BLUE, actualBlue);
@@ -57,6 +58,7 @@ void setup() {
 void decodePackage(int packetSize) {
   if (packetSize >= 7) {
     if (strncmp(packetBuffer, "Art-Net", 7) == 0) {
+#ifdef DEBUG
       Serial.println("Artnet packet received");
       uint16_t numChannels = 0;
       numChannels |= packetBuffer[16];
@@ -64,6 +66,7 @@ void decodePackage(int packetSize) {
       numChannels |= packetBuffer[17];
       Serial.print("Number of channels:");
       Serial.println(numChannels);
+#endif
       uint8_t led = 0;
       if (numChannels >= 3) {
         setColor(packetBuffer[18], packetBuffer[19], packetBuffer[20]);
